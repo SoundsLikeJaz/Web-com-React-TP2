@@ -1,2 +1,10 @@
-main {
+nav ul {
+    display: flex;
+    justify-content: space-around;
+}
+
+nav ul li {
+    list-style: none;
+    padding: 10px;
+    padding: 0;
 }
