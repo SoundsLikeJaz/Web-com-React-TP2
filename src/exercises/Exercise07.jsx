@@ -1,34 +1,63 @@
 // Exercise07.js
-import { useMemo, useRef, useState } from "react";
+
+import { useForm } from "react-hook-form";
 
 const Exercise07 = () => {
 
-  const numRef = useRef(0);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
-  const [fatorial, setFatorial] = useState(1);
-
-  function calcularFatorial() {
-    let num = parseInt(numRef.current.value);
-    let fat = 1;
-    for (let i = 1; i <= num; i++) {
-      fat *= i;
-    }
-    setFatorial(fat);
+  function submeterDados(dados) {
+    alert(JSON.stringify(dados));
+    reset();
   }
-
-  const resultadoMemo = useMemo(() => {
-    return fatorial === 1 ? "" : <p>O fatorial deste valor é {fatorial}</p>;
-  }, [fatorial]);
 
   return (
     <div>
       <h1>Exercise 07</h1>
-      <label htmlFor="fatorial">Numero a ser fatorado: </label>
-      <input type="number" id="fatorial" ref={numRef} /> 
-      <button onClick={calcularFatorial}>Calcular</button>
-      <br />
-      <br />
-      {resultadoMemo}
+      <div>
+        <h2>Formulário</h2>
+        <form onSubmit={handleSubmit(submeterDados)}>
+          <label htmlFor="nome">Nome:</label>&nbsp;
+          <input type="text" id="nome" {...register("nome", {
+            required: "O campo nome é obrigatório!"
+          })} />
+          {errors.nome?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.nome.message}</span>
+            </div>
+          )}
+          <br />
+
+          <label htmlFor="email">Email:</label>&nbsp;
+          <input size={30} id="email" {...register("email", {
+            required: "O campo email é obrigatório.",
+            validate: {
+              maxLength: (v) => v.length <= 50 || "O campo email pode ter no máximo 50 caracteres.",
+            }
+          })} />
+          {errors.email?.message && (
+            <div style={{ color: 'red' }}>
+              {errors.email.message}
+            </div>
+          )}
+          <br />
+
+          <label htmlFor="fone">Telefone:</label>&nbsp;
+          <input type="tel" id="fone" {...register("fone", {
+            required: "O campo telefone é obrigatório!",
+            validate: {
+              matchPattern: value => /^[0-9]*$/.test(value) || "O campo telefone deve conter apenas números!",
+            }
+          })} />
+          {errors.fone?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.fone.message}</span>
+            </div>
+          )}
+          <br />
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
     </div>
   );
 };

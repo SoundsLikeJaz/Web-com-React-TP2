@@ -1,76 +1,89 @@
 // Exercise11.js
-import { faker } from "@faker-js/faker";
-import React, { useRef, useState } from "react";
+
+import { useEffect, useState } from "react";
+import { listarPessoas } from "../infra/pessoas";
+import { useForm } from "react-hook-form";
+import ListaPessoas from "../componentes/ListaPessoas";
 
 const Exercise11 = () => {
-  const individuos = new Array(100).fill().map((value) => {
-    const individuo = new Object();
-    individuo.nome = faker.person.fullName();
-    individuo.cargo = faker.name.jobTitle();
-    return individuo;
-  });
 
-  const [pessoas, setPessoas] = useState([...individuos]);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
-  const [temp, setTemp] = useState([...pessoas]);
+  const [pessoas, setPessoas] = useState([]);
+  const [idEmEdicao, setIdEmEdicao] = useState("");
 
-  const nomeRef = useRef("");
-  const cargoRef = useRef("");
-
-  function handleClick() {
-    if (nomeRef.current.value !== "" && cargoRef.current.value !== "") {
-      const individuo = {
-        nome: nomeRef.current.value,
-        cargo: cargoRef.current.value,
-      };
-      setPessoas([...pessoas, individuo]);
-      nomeRef.current.value = "";
-      cargoRef.current.value = "";
-    } else {
-      alert("Preencha os campos");
+  useEffect(() => {
+    async function fetchData() {
+      const pessoas = await listarPessoas();
+      setPessoas(pessoas);
     }
-  }
+    fetchData();
+  }, []);
 
-  function handleFilterNome(event) {
-    const value = event.target.value;
-    setTemp(
-      pessoas.filter((pessoa) => {
-        return pessoa.nome.toLowerCase().includes(value.toLowerCase());
-      })
-    );
-  }
-
-  function handleFilterCargo(event) {
-    const value = event.target.value;
-    setTemp(
-      pessoas.filter((pessoa) => {
-        return pessoa.cargo.toLowerCase().includes(value.toLowerCase());
-      })
-    );
+  async function submeterDados(dados) {
+    const sucesso = await inserirPessoa(dados);
+    if (sucesso) {
+      alert("Pessoa cadastrada com sucesso.");
+      const pessoas = await listarPessoas();
+      setPessoas(pessoas);
+      reset();
+    } else {
+      alert("Erro ao cadastrar pessoa.");
+    }
   }
 
   return (
     <div>
       <h1>Exercise 11</h1>
       <div>
-        <label htmlFor="nome">Insira o nome: </label>
-        <input type="text" id="nome" ref={nomeRef} />&nbsp;
-        <label htmlFor="cargo">Insira o cargo: </label>&nbsp;
-        <input type="text" id="cargo" ref={cargoRef} />&nbsp;
-        <button onClick={handleClick}>Adicionar</button>
+        <h2>Formulário</h2>
+        <form onSubmit={handleSubmit(submeterDados)}>
+          <label htmlFor="nome">Nome:</label>&nbsp;
+          <input type="text" id="nome" {...register("nome", {
+            required: "O campo nome é obrigatório!"
+          })} />
+          {errors.nome?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.nome.message}</span>
+            </div>
+          )}
+          <br />
+
+          <label htmlFor="email">Email:</label>&nbsp;
+          <input id="email" {...register("email", {
+            required: "O campo email é obrigatório.",
+            validate: {
+              matchPattern: (v) => /^[a-z0-9.]+@[a-z0-9]+\.[a-z]+$/i.test(v) || "Email inválido."
+            }
+          })} />
+          {errors.email?.message && (
+            <div style={{ color: 'red' }}>
+              {errors.email.message}
+            </div>
+          )}
+          <br />
+
+          <label htmlFor="telefone">Telefone:</label>&nbsp;
+          <input type="tel" id="telefone" {...register("telefone", {
+            required: "O campo telefone é obrigatório!",
+            validate: {
+              matchPattern: (v) => /^[0-9]*$/.test(v) || "O campo telefone deve conter apenas números!",
+              minLength: (v) => v.length >= 10 || "O campo telefone deve ter no mínimo 10 caracteres!",
+              maxLength: (v) => v.length <= 11 || "O campo telefone deve ter no máximo 11 caracteres!"
+            }
+          })} />
+          {errors.fone?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.fone.message}</span>
+            </div>
+          )}
+          <br />
+          <input type="submit" value="Enviar" />
+        </form>
       </div>
       <div>
-        <h2>Nomes</h2>
-        <label htmlFor="filtroNome">Pesquisar nome: </label>
-        <input type="text" id="filtroNome" onChange={handleFilterNome} /> <br />
-        <br />
-        <label htmlFor="filtroCargo">Pesquisar cargo: </label>
-        <input type="text" id="filtroCargo" onChange={handleFilterCargo} />
-        <ul>
-          {temp.map((pessoa, index) => (
-            <li key={index}>{pessoa.nome} - {pessoa.cargo}</li>
-          ))}
-        </ul>
+        <h2>Pessoas Cadastradas</h2>
+        <ListaPessoas pessoas={pessoas} setIdEmEdicao={setIdEmEdicao} />
       </div>
     </div>
   );

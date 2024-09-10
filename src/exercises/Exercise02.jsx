@@ -1,29 +1,56 @@
 // Exercise02.js
-import React, { useReducer } from "react";
+
+import { useState } from "react";
 
 const Exercise02 = () => {
 
-  const [pessoa, updatePessoa] = useReducer(pessoaReducer, {nome: 'João', idade: 25});
+  const [nome, setNome] = useState("");
+  const [fone, setFone] = useState("");
+  const [errorNome, setErrorNome] = useState("");
+  const [errorFone, setErrorFone] = useState("");
 
-  function pessoaReducer(state, action) {
-    switch(action.type) {
-      case 'diminuirIdade':
-        return {...state, idade: state.idade - 1};
-      case 'aumentarIdade':
-        return {...state, idade: state.idade + 1};
-      default:
-        throw Error(`Ação desconhecida: ${action.type}`);
+  function handleNomeChange(event) {
+    let value = event.target.value;
+    if (!value) {
+      setErrorNome("O campo nome é obrigatório!");
+    } else {
+      setErrorNome("");
     }
+    setNome(value);
+  }
+
+  function handleFoneChange(event) {
+    let value = event.target.value;
+    if (!value) {
+      setErrorFone("O campo telefone é obrigatório!");
+    } else {
+      setErrorFone("");
+    }
+    setFone(value);
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    alert(`Nome: ${nome} - Telefone: ${fone}`);
   }
   
   return (
     <div>
       <h1>Exercise 02</h1>
-      <p>Aqui temos {pessoa.nome}!</p>
-      <p>{pessoa.nome} tem {pessoa.idade} anos!</p>
-      <p>Com os botões abaixo, você pode alterar a idade de {pessoa.nome}</p>&nbsp;
-      <button onClick={() => updatePessoa({ type: "diminuirIdade" })}>Diminuir idade</button>&nbsp;
-      <button onClick={() => updatePessoa({ type: "aumentarIdade" })}>Aumentar idade</button>
+      <div>
+        <h2>Formulário</h2>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="nome">Nome:</label>&nbsp;
+          <input type="text" id="nome" name="nome" value={nome} onChange={handleNomeChange} />
+          {errorNome && <div><span style={{ color: "red" }}>{errorNome}</span></div>}
+          <br />
+          <label htmlFor="fone">Telefone:</label>&nbsp;
+          <input type="tel" id="fone" name="fone" value={fone} onChange={handleFoneChange} />
+          {errorFone && <div><span style={{ color: "red" }}>{errorFone}</span></div>}
+          <br /> <br />
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
     </div>
   );
 };

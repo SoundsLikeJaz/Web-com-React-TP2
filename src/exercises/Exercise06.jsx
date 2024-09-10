@@ -1,46 +1,48 @@
 // Exercise06.js
-import React, { useReducer, useState } from "react";
+
+import { useForm } from "react-hook-form";
 
 const Exercise06 = () => {
-  const [novaTarefa, setNovaTarefa] = useState("");
 
-  const [tarefas, updateTarefas] = useReducer(tarefasReducer, []);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
-  function handleChange(event) {
-    setNovaTarefa(event.target.value);
-  }
-
-  function tarefasReducer(state, action) {
-    switch (action.type) {
-      case "adicionar":
-        setNovaTarefa("");
-        return [...state, action.tarefa];
-      case "remover":
-        return state.filter((tarefa) => tarefa !== action.tarefa);
-      default:
-        throw Error(`Ação desconhecida: ${action.type}`);
-    }
+  function submeterDados(dados) {
+    alert(JSON.stringify(dados));
+    reset();
   }
 
   return (
     <div>
       <h1>Exercise 06</h1>
       <div>
-        <label htmlFor="novaTerefa">Insira a nova tarefa: </label>
-        <input type="text" id="novaTarefa" value={novaTarefa} onChange={handleChange} /> &nbsp;
-        <button onClick={() => updateTarefas({ type: "adicionar", tarefa: novaTarefa })}>Adicionar</button>
-      </div>
-      <div>
-        <h2>Tarefas</h2>
-        <ul>
-          {tarefas.map((tarefa, index) => (
-            <li key={index} id={`tarefa-${index}`}>
-              {tarefa} &nbsp;
-              <button onClick={() => updateTarefas({ type: "remover", tarefa })}>Remover</button> &nbsp;
-              <button onClick={() => document.getElementById(`tarefa-${index}`).style.textDecoration = "line-through"}>Tarefa concluída</button>
-            </li>
-          ))}
-        </ul>
+        <h2>Formulário</h2>
+        <form onSubmit={handleSubmit(submeterDados)}>
+          <label htmlFor="nome">Nome:</label>&nbsp;
+          <input type="text" id="nome" {...register("nome", {
+            required: "O campo nome é obrigatório!"
+          })} />
+          {errors.nome?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.nome.message}</span>
+            </div>
+          )}
+
+          <br />
+          <label htmlFor="fone">Telefone:</label>&nbsp;
+          <input type="tel" id="fone" {...register("fone", {
+            required: "O campo telefone é obrigatório!",
+            validate: {
+              matchPattern: value => /^[0-9]*$/.test(value) || "O campo telefone deve conter apenas números!",
+            }
+          })} />
+          {errors.fone?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.fone.message}</span>
+            </div>
+          )}
+          <br />
+          <button type="submit">Enviar</button>
+        </form>
       </div>
     </div>
   );

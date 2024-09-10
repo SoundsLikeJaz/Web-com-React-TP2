@@ -1,79 +1,55 @@
 // Exercise15.js
-import React, { useEffect, useState } from "react";
-import obterMunicipios from "../infra/municipios";
-import obterEstados from "../infra/estados";
+
+import { useForm } from "react-hook-form";
+import { logarUsuario } from "../infra/usuarios";
 
 const Exercise15 = () => {
-  const [estados, setEstados] = useState([]);
 
-  const [estado, setEstado] = useState(0);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
-  const [municipios, setMunicipios] = useState([]);
-
-  const [tempArray, setTempArray] = useState([...municipios]);
-
-  useEffect(() => {
-    async function carregarEstados() {
-      const lista = await obterEstados();
-      setEstados(lista);
+  async function submeterDados(dados) {
+    const sucesso = await logarUsuario(dados.email, dados.senha);
+    if (sucesso.erro) {
+      alert(sucesso.erro);
+    } else {
+      alert("Login efetuado com sucesso!");
+      reset();
     }
-
-    carregarEstados();
-  }, []);
-
-  useEffect(() => {
-    async function carregarMunicipios() {
-      if (estado > 0) {
-        const lista = await obterMunicipios(estado);
-        setMunicipios(lista);
-        setTempArray(lista);
-      }
-    }
-
-    carregarMunicipios();
-  }, [estado]);
-
-  function handleEstadoChange(event) {
-    setEstado(parseInt(event.target.value));
-  }
-
-  function handleFiltrarMunicipio(event) {
-    const value = event.target.value;
-    setTempArray(
-      municipios.filter((municipio) => {
-        return municipio.nome.toLowerCase().includes(value.toLowerCase());
-      })
-    );
   }
 
   return (
     <div>
       <h1>Exercise 15</h1>
       <div>
-        <h2>Estados</h2>
-        <select id="estados" onChange={handleEstadoChange} >
-          <option value="" disabled>Selecione um estado</option>
-          {estados.map((estado) => (
-            <option key={estado.id} value={estado.id}>
-              {estado.nome}
-            </option>
-          ))}
-        </select>
+        <h2>Formulário</h2>
+        <form onSubmit={handleSubmit(submeterDados)}>
+        <label htmlFor="email">Email: </label>&nbsp;
+          <input id="email" {...register("email", {
+            required: "O campo email é obrigatório.",
+            validate: {
+              matchPattern: (v) => /^[a-z0-9.]+@[a-z0-9]+\.[a-z]+$/i.test(v) || "Email inválido."
+            }
+          })} />
+          {errors.email?.message && (
+            <div style={{ color: 'red' }}>
+              {errors.email.message}
+            </div>
+          )}
+
+          <br />
+          <label htmlFor="senha">Senha: </label>&nbsp;
+          <input type="password" id="senha" name="senha" {...register("senha", {
+            required: "O campo senha é obrigatório!",
+          })} />
+          {errors.fone?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.fone.message}</span>
+            </div>
+          )}
+          <br />
+          <button type="submit">Enviar</button>
+        </form>
       </div>
-      {municipios.length > 0 && (
-        <div>
-          <h2>Municípios</h2>
-          <label htmlFor="filtroMunicipio">Pesquisar município: </label>
-          <input type="text" id="filtroMunicipio" onChange={handleFiltrarMunicipio} placeholder="Nome do município" />
-          <ul>
-            {tempArray.map((municipio) => (
-              <li key={municipio.id}>
-                {municipio.nome}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 };

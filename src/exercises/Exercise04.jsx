@@ -1,88 +1,44 @@
-import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+
 
 const Exercise04 = () => {
 
-  const [usuarios, setUsuarios] = useState([]);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
-  const {register, handleSubmit, formState: {errors}, reset} = useForm();
-
-  function onSubmit(data) {
-    setUsuarios([...usuarios, data]);
-    console.log(usuarios);
+  function submeterDados() {
     reset();
-  }
-
-  function aumentarIdade(usuario) {
-    const novosUsuarios = usuarios.map((u) => {
-      if (u === usuario) {
-        return {...u, idade: Number(u.idade) + 1};
-      }
-      return u;
-    });
-
-    setUsuarios(novosUsuarios);
-  }
-
-  function diminuirIdade(usuario) {
-    const novosUsuarios = usuarios.map((u) => {
-      if (u === usuario) {
-        return {...u, idade: u.idade - 1};
-      }
-      return u;
-    });
-
-    setUsuarios(novosUsuarios);
-  }
-
-  function excluirUsuario(usuario) {
-    const novosUsuarios = usuarios.filter((u) => u !== usuario);
-    setUsuarios(novosUsuarios);
   }
 
   return (
     <div>
       <h1>Exercise 04</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <label htmlFor="nome">Nome:</label>&nbsp;
-        <input id="nome" {...register("nome", {
-          required: "Este campo é obrigatório", 
-          validate: {
-            maxLength: value => value.length <= 20 || "O nome deve ter no máximo 20 caracteres"
-          }
+      <div>
+        <h2>Formulário</h2>
+        <form onSubmit={handleSubmit(submeterDados)}>
+          <label htmlFor="nome">Nome:</label>&nbsp;
+          <input type="text" id="nome" name="nome" {...register("nome", {
+            required: "O campo nome é obrigatório!"
           })} />
-        {errors.nome && <p>{errors.nome.message}</p>}
+          {errors.nome?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.nome.message}</span>
+            </div>
+          )}
 
-        <br />
-        <br />
-
-        <label htmlFor="idade">Idade: </label>
-        <input id="idade" type="number" {...register("idade", {
-          required: "Este campo é obrigatório", 
-          validate: {
-            min: value => value > 1 || "Insira uma idade válida",
-            max: value => value < 100 || "Insira uma idade válida"
-          }
+          <br />
+          <label htmlFor="fone">Telefone:</label>&nbsp;
+          <input type="tel" id="fone" name="fone" {...register("fone", {
+            required: "O campo telefone é obrigatório!"
           })} />
-          {errors.idade && <p>{errors.idade.message}</p>}
-        <br />
-        <br />
-        <button type="submit">Adicionar</button>
-      </form>
-
-      <h2>Usuários</h2>
-      <ul>
-        {usuarios.map((usuario, index) => (
-          <>
-            <li key={index}>{usuario.nome} - {usuario.idade} anos <br />
-            <button onClick={() => aumentarIdade(usuario)}>Aumentar idade</button> <br />
-            <button onClick={() => diminuirIdade(usuario)}>Diminuir idade</button> <br />
-            <button onClick={() => excluirUsuario(usuario)}>Excluir usuário</button>
-            </li>
-            <br />
-          </>
-        ))}
-      </ul>
+          {errors.fone?.message && (
+            <div>
+              <span style={{ color: "red" }}>{errors.fone.message}</span>
+            </div>
+          )}
+          <br />
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
     </div>
   );
 };

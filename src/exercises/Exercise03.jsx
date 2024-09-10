@@ -1,83 +1,71 @@
 // Exercise03.js
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+
+import { useState } from "react";
 
 const Exercise03 = () => {
 
-  const [usuarios, setUsuarios] = useState([]);
+  const [nome, setNome] = useState("");
+  const [fone, setFone] = useState("");
+  const [errorNome, setErrorNome] = useState("");
+  const [errorFone, setErrorFone] = useState("");
 
-  const {register, handleSubmit, formState: {errors}, reset} = useForm();
-
-  function onSubmit(data) {
-    setUsuarios([...usuarios, data]);
-    console.log(usuarios);
-    reset();
+  function handleNomeChange(event) {
+    let value = event.target.value;
+    if (!value) {
+      setErrorNome("O campo nome é obrigatório!");
+    } else {
+      setErrorNome("");
+    }
+    setNome(value);
   }
 
-  function aumentarIdade(usuario) {
-    const novosUsuarios = usuarios.map((u) => {
-      if (u === usuario) {
-        return {...u, idade: Number(u.idade) + 1};
-      }
-      return u;
-    });
+  function handleFoneChange(event) {
+    const value = event.target.value;
 
-    setUsuarios(novosUsuarios);
+    let eNumerico = true;
+    
+    for (let i = 0; i < value.length; i++) {
+        if (isNaN(value[i])) {
+            eNumerico = false;
+            break;
+        }
+    }
+    
+    if (!value) {
+        setErrorFone("O campo telefone é obrigatório!");
+    } else if (!eNumerico) {
+        setErrorFone("O campo telefone deve conter apenas números!");
+    } else if (value.length < 10 || value.length > 11) {
+        setErrorFone("O telefone deve ter 10 ou 11 dígitos!");
+    } else {
+        setErrorFone("");
+    }
+
+    setFone(value);
+}
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    alert(`Nome: ${nome} - Telefone: ${fone}`);
   }
-
-  function diminuirIdade(usuario) {
-    const novosUsuarios = usuarios.map((u) => {
-      if (u === usuario) {
-        return {...u, idade: u.idade - 1};
-      }
-      return u;
-    });
-
-    setUsuarios(novosUsuarios);
-  }
-
+  
   return (
     <div>
       <h1>Exercise 03</h1>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <label htmlFor="nome">Nome:</label>&nbsp;
-        <input id="nome" {...register("nome", {
-          required: "Este campo é obrigatório", 
-          validate: {
-            maxLength: value => value.length <= 20 || "O nome deve ter no máximo 20 caracteres"
-          }
-          })} />
-        {errors.nome && <p>{errors.nome.message}</p>}
-
-        <br />
-        <br />
-
-        <label htmlFor="idade">Idade: </label>
-        <input id="idade" type="number" {...register("idade", {
-          required: "Este campo é obrigatório", 
-          validate: {
-            min: value => value > 1 || "Insira uma idade válida",
-            max: value => value < 100 || "Insira uma idade válida"
-          }
-          })} />
-          {errors.idade && <p>{errors.idade.message}</p>}
-        <br />
-        <br />
-        <button type="submit">Adicionar</button>
-      </form>
-
-      <h2>Usuários</h2>
-      <ul>
-        {usuarios.map((usuario, index) => (
-          <>
-            <li key={index}>{usuario.nome} - {usuario.idade} anos <br />
-            <button onClick={() => aumentarIdade(usuario)}>Aumentar idade</button>
-            <button onClick={() => diminuirIdade(usuario)}>Diminuir idade</button>
-            </li>
-            <br />
-          </>
-        ))}
-      </ul>
+      <div>
+        <h2>Formulário</h2>
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="nome">Nome:</label>&nbsp;
+          <input type="text" id="nome" name="nome" value={nome} onChange={handleNomeChange} />
+          {errorNome && <div><span style={{ color: "red" }}>{errorNome}</span></div>}
+          <br />
+          <label htmlFor="fone">Telefone:</label>&nbsp;
+          <input type="tel" id="fone" name="fone" value={fone} onChange={handleFoneChange} />
+          {errorFone && <div><span style={{ color: "red" }}>{errorFone}</span></div>}
+          <br /> <br />
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
     </div>
   );
 };
